@@ -1,0 +1,14 @@
+#!/bin/sh
+
+pushd . > /dev/null
+cd /home/joe/projects  || exit 1
+sel_dir=$(ls | fzf)
+if [ -z "$sel_dir" ]; then
+	echo "failed"
+	popd > /dev/null
+	exit 1
+else
+	echo "not failed $sel_dir"
+	cd "$sel_dir" || exit 1
+fi
+

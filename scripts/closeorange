@@ -1,0 +1,8 @@
+#!/bin/bash
+# knock 1353 23715 52602 37697
+IP=192.168.4.133
+echo knocking ports...
+echo "" | nc -w 1 $IP 59668 & 
+echo "" | nc -w 1 $IP 41293 & 
+echo "" | nc -w 1 $IP 64245 & 
+echo "" | nc -w 1 $IP 51076

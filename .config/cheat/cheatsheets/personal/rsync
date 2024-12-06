@@ -1,0 +1,18 @@
+-a:
+archive. equivalent of -rlptgoD
+
+-r: recurse
+
+--mkpath
+
+--rsh: specify remote shell
+
+--delete: delete extraneous files from dest dirs
+
+--update: skip files newer on receiver
+
+--partial: save partially transferred files in case of interrupt
+
+-P: --partial --progress
+
+-z: compress

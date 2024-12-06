@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd ~/scripts/cheatsheets
+
+SELECTION=$(ls | fzf)
+
+groff -man $SELECTION -Tpdf | zathura -

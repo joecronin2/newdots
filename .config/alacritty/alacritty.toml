@@ -1,0 +1,17 @@
+#import = ["/home/joe/.config/alacritty/themes/tokyo-night.toml"]
+[general]
+import = ["/home/joe/.config/alacritty/themes/midnight-haze.toml"]
+# shell = "/bin/tmux"
+[terminal]
+shell = "/bin/zsh"
+# shell = "/bin/zellij"
+
+[window]
+blur = true
+opacity = 0.5
+
+
+[font]
+# /usr/share/fonts/TTF/JetBrainsMonoNerdFont-Regular.ttf
+normal.family = "0xProto Nerd Font"
+size = 7

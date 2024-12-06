@@ -1,0 +1,5 @@
+!#/bin/sh
+
+
+
+man -Tpdf $1 | zathura - &disown;exit

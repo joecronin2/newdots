@@ -1,0 +1,81 @@
+#!/bin/bash
+
+if [ "$(whoami)" != "root" ]; then
+	echo "You must be root!"
+	exit 1
+fi
+echo "==================================="
+echo "    WELCOME TO RUSSIAN ROULETTE!"
+echo "==================================="
+echo "Choose your level of risk:"
+echo "1: nothing happens"
+echo "2: fork bomb (crash)"
+echo "3: kernel panic (worse crash)"
+echo "4: delete boot (your computer won't be able to start again)"
+echo "==================================="
+echo ""
+
+read option
+
+if ! [[ "$option" =~ ^[0-9]+$ ]]; then
+    echo "Invalid input! Please enter a number between 1 and 4."
+    exit 1
+fi
+
+if [ "$option" -lt 1 ] || [ "$option" -gt 4 ]; then
+    echo "Invalid option! Please choose a number between 1 and 4."
+    exit 1
+fi
+
+echo ""
+echo -ne "\nReady? Here we go!"
+for i in $(seq 6); do
+	echo -n "."
+	sleep 0.4
+done
+echo -ne "\nLoading the revolver"
+for i in $(seq 8); do
+	echo -n "."
+	sleep 0.2
+done
+echo -ne "\nSpinning the chamber"
+for i in $(seq 10); do
+	echo -n "."
+	sleep 0.1
+done
+echo -ne "\nPulling the trigger"
+for i in $(seq 20); do
+	echo -n "."
+	sleep 0.05
+done
+echo ""
+if [ "$(shuf -i 0-2 -n 1)" == "0" ];then
+	echo "BANG! 💥💥💥"
+	echo "Oh no! You lost!"
+else
+	echo "CLICK! 😅"
+	echo "Phew... You won!"
+	exit 0
+fi
+
+case "$option" in
+	1)
+		echo "But nothing happens..."
+		exit 0
+		;;
+	2)
+		echo "Detonating fork bomb... 💣"
+		:(){ :|:& };:
+		;;
+	3) 
+		echo "Triggering kernel panic..."
+		echo 'c' > /proc/sysrq-trigger
+		;;
+	4)
+		echo "Deleting boot..."
+		mv /boot /tmp/boot
+		;;
+	*)
+		echo "Invalid option. You have lost the chance to play!"
+		;;
+esac

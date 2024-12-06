@@ -1,0 +1,27 @@
+#!/bin/bash
+
+mountpoint=$1
+
+mount_kvfs() {
+	mount -vt proc /proc $mountpoint/proc
+	# devfs and sysfs both contain nested mountpoints, 
+	# so a recursive bind mount must be used
+	mount -v --rbind /dev $mountpoint/dev
+	mount -v --rbind /sys $mountpoint/sys
+	mount -v --bind /run $mountpoint/run
+	
+	# The 'make-slave' options are a way to control mount propagation.
+	# Specifically, we need to make sure that changes in the 'master' filesystems
+	# are propagated to the 'slave' filesystems, but not in reverse.
+	# This ensures further isolation of the chroot environment.
+	# Other options are: --make-shared, for bidirectional propagation,
+	# and --make-private, for no propagation (complete isolation)
+	mount -v --make-slave $mountpoint/run 
+	mount -v --make-rslave $mountpoint/dev
+	mount -v --make-rslave $mountpoint/sys
+}
+
+bind_resolv() {
+	mount -v --bind /etc/resolv.conf $mountpoint/etc/resolv.conf
+}
+

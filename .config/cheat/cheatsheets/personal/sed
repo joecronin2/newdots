@@ -1,0 +1,15 @@
+-i: in place
+sed -i.bak 's/foo/bar/' file.txt  # Backup with `.bak`
+
+passing files with xarg
+fd | xargs sed -i 'pattern'
+
+/p: print
+/d: delete
+/q: quit
+
+\a: append
+sed '/pattern/a\This is appended text' file.txt
+
+\i: insert:
+sed '/pattern/i\This is inserted text' file.txt

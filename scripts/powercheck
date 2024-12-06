@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ $(cat /sys/class/power_supply/BAT0/capacity) -lt 10 ]; then 
+	notify-send "BAT0 < 10%"
+fi
+
+if [ $(cat /sys/class/power_supply/BAT1/capacity) -lt 10 ]; then 
+	notify-send "BAT1 < 10%"
+fi

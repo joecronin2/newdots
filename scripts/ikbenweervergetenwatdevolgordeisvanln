@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "De volgorde is: [bestaand bestand] [link]"
+echo "Dus...  'ln -s a b' zorgt voor:"
+echo " b -> a"
+echo " a"

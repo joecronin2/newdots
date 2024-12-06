@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+SELECTED_DEV=$(lsblk -o rm,mountpoint,path,model | awk '$1 == 1 {print $2,$3,$4}' | rofi -dmenu | awk '{print $1}')
+MOUNTPOINT=$(fd . -t e -t d /mnt | rofi -dmenu)
+
+doas mount -v $SELECTED_DEV $MOUNTPOINT

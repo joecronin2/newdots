@@ -1,0 +1,12 @@
+#!/bin/bash
+IP=77.160.110.42
+echo knocking ports...
+knock $IP 59964 47973 42367 46773
+# echo "" | nc -w 1 $IP 59964 & 
+# echo "" | nc -w 1 $IP 47973 & 
+# echo "" | nc -w 1 $IP 42367 & 
+# echo "" | nc -w 1 $IP 46773 &
+# sleep 2
+echo connecting...
+
+ssh -p 7248 joe@$IP
