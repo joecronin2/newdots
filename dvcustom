@@ -20,7 +20,7 @@ xkb_symbols "dv" {
     key <AE09> { [ braceright,            8                                           ], type[Group1] = "FOUR_LEVEL_ALPHABETIC" };
     key <AE10> { [ parenright,    9                                           ], type[Group1] = "FOUR_LEVEL_ALPHABETIC" };
     key <AE11> { [ ampersand,          0,              exclamdown,      U2E18      ], type[Group1] = "FOUR_LEVEL_ALPHABETIC" };  // reversed interrobang
-    key <AE12> { [ numbersign,      grave,          dead_grave                  ] };
+    key <AE12> { [ grave,      asciicircum,          dead_grave                  ] };
 
     // upper row, left side
     key <AD01> { [ semicolon,       colon, 1] };
@@ -34,7 +34,7 @@ xkb_symbols "dv" {
     key <AD09>	{[         r,    R          ]};
     key <AD10>	{[         l,    L          ]};
     key <AD11>	{[     slash,    question   ]};
-    key <AD12>	{[     at,    asciicircum       ]};
+    key <AD12>	{[     underscore,    numbersign       ]};
 
     key <AC01>	{[         a,    A,5]};
     key <AC02>	{[         o,    O,6]};
@@ -46,7 +46,7 @@ xkb_symbols "dv" {
     key <AC08>	{[         t,    T          ]};
     key <AC09>	{[         n,    N          ]};
     key <AC10>	{[	   s,    S          ]};
-    key <AC11>	{[     minus,    underscore ]};
+    key <AC11>	{[     minus,    at ]};
     key <BKSL>	{[ backslash,    bar        ]};
 
     key <AB01>	{[ semicolon,    colon,comma,  dead_doubleacute ]};
