@@ -1,6 +1,6 @@
 # school
-blok1_dir=/home/joe/projects/vootiizaavii86/webapp/dashboard
-alias fl="USERS_CSV=$blok1_dir/db/users.csv DB_DIR=$blok1_dir/db/users flask --app $blok1_dir run --debug"
+blok2_dir=/home/joe/projects/vootiizaavii86/webapp/dashboard
+alias fl="flask --app $blok2_dir run --debug"
 alias fld="cd $blok1_dir/..; USERS_CSV=$blok1_dir/users.csv DB_DIR=$blok1_dir/db/ gunicorn secretsapp:app"
 alias ct="oneko -tofocus -speed 30 & disown"
 
@@ -15,6 +15,8 @@ openproject () {
 		cd "$PROJECT_DIR/$project"
 	fi
 }
+
+alias jssh="ssh joe@192.168.4.129"
 
 # essential
 alias br="librewolf"
@@ -33,6 +35,7 @@ alias ag="a | rg"
 alias ff="fastfetch"
 
 # git aliases
+alias lg="lazygit"
 alias gcl="git clone"
 alias gdf="git diff"
 alias gcm="git commit -m"
