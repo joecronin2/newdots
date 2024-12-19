@@ -1,4 +1,8 @@
 #!/bin/zsh
+
+autoload -Uz compinit
+compinit
+
 # source /home/joe/.zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 source /home/joe/.zsh/plugins/doas.zsh
 source /home/joe/.zsh/plugins/vim.zsh
