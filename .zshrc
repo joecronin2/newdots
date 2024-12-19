@@ -7,7 +7,7 @@ PROMPT="$prompt_top"$'\n'"$prompt_bottom"
 
 source ~/.zsh_comps
 source ~/.zsh_plugins/doas.zsh
-source ~/.zsh_plugins/vim.zsh
+source ~/.zsh_plugins/zsh-vi-mode/zsh-vi-mode.zsh
 source ~/.zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source ~/.zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
