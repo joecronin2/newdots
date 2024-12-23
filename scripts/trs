@@ -1,0 +1,26 @@
+#!/bin/zsh
+
+set -e
+
+usage() {
+	echo "Usage: $0 [input file] [output dir]"
+}
+
+INPUT_FILE="$1"
+OUT_DIR="$2"
+
+if [ ! -f "$INPUT_FILE" ]; then
+	echo "Invalid file: $INPUT_FILE"
+	usage
+fi
+
+if [ ! -f "$OUT_DIR" ]; then
+	echo "Invalid directory: $OUT_DIR"
+	usage
+fi
+
+ffmpeg -y -hwaccel cuda -i "$INPUT_FILE" \
+	-movflags +faststart -c:v h264_nvenc -pix_fmt yuv420p -c:a copy \
+	"$OUT_DIR/$(basename "${INPUT_FILE%.*}.mp4")"
+
+exit $?
