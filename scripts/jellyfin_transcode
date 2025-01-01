@@ -1,0 +1,53 @@
+#!/bin/zsh
+
+set -e
+
+# if [ -z "$1" ]; then
+# 	echo "No file selected."
+# 	echo "Usage: $0 [video file]"
+# 	exit 1
+# fi
+#
+# INPUT_FILE="$1"
+# if [ ! -f "$INPUT_FILE" ]; then
+# 	echo "Invalid file: $INPUT_FILE"
+# 	exit 1
+# fi
+
+# ORIGINAL_SIZE=$(du -h $INPUT_FILE | awk '{print $1}')
+
+# echo -n "Enter media name: "
+# read MEDIA_NAME
+# MEDIA_NAME=$(echo $MEDIA_NAME | sed 's/[ \.]/_/g')
+#
+# echo -n "Enter year: "
+# read MEDIA_YEAR
+#
+# echo -n "Output directory [/mnt/media]: "
+# read OUT_DIR
+# if [ -z "$OUT_DIR" ]; then
+#		OUT_DIR="/mnt/media"
+# fi
+
+OUT_DIR="/mnt/media"
+OUTPUT_FILE="${MEDIA_NAME}_($MEDIA_YEAR).mp4"
+
+# ffmpeg -i $INPUT_FILE -vf "format=yuv420p" -c:v h264_nvenc -crf 23 $OUTPUT_FILE
+for f in /mnt/media/*.mkv; do
+	ffmpeg -i "$f" -vf "format=yuv420p" -c:v h264_nvenc "/transcoded/$(basename "${f%.*}.mp4")"
+	rm $f
+	echo "DONE"
+	aplay /home/joe/sounds/notification.wav &> /dev/null &
+	sleep 5
+done
+
+# rm $INPUT_FILE
+#
+# echo "Successfully transcoded $OUTPUT_FILE"
+# echo "Original size: $ORIGINAL_SIZE"
+# echo "New size: $(du -h $OUTPUT_FILE | awk '{print $1}')"
+for f in */**/*; do
+	ffmpeg -i "$f" -vf "format=yuv420p" -c:v h264_nvenc "/transcoded/$(basename "${f%.*}.mp4")"
+	rm $f
+	echo "DONE"
+done

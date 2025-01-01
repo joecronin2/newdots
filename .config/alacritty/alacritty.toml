@@ -1,6 +1,6 @@
-#import = ["/home/joe/.config/alacritty/themes/tokyo-night.toml"]
 [general]
-import = ["/home/joe/.config/alacritty/themes/midnight-haze.toml"]
+# import = ["/home/joe/.config/alacritty/themes/tokyo-night.toml"]
+import = ["/home/joe/.config/alacritty/themes/everforest-dark.toml"]
 # shell = "/bin/tmux"
 [terminal]
 shell = "/bin/zsh"
@@ -8,10 +8,9 @@ shell = "/bin/zsh"
 
 [window]
 blur = true
-opacity = 0.5
+opacity = 0.7
 
 
 [font]
 # /usr/share/fonts/TTF/JetBrainsMonoNerdFont-Regular.ttf
 normal.family = "0xProto Nerd Font"
-size = 7

@@ -1,0 +1,7 @@
+.zsh/plugins/zsh-autocomplete
+.zsh/plugins/zsh-autosuggestions
+.zsh/plugins/zsh-syntax-highlighting/
+.zsh_plugins/zsh-autocomplete
+.zsh_plugins/zsh-autosuggestions
+.zsh_plugins/zsh-syntax-highlighting
+.zsh_plugins/zsh-vi-mode

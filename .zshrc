@@ -163,3 +163,5 @@ fi
 # fastfetch
 # uncomment to profile
 # zprof
+
+source <(fzf --zsh)
