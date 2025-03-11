@@ -44,4 +44,7 @@ picom &
 alacritty &
 gentoo-pipewire-launcher &
 wpctl set-volume @DEFAULT_AUDIO_SINK@ 0% &
-exec dbus-launch --exit-with-session dwm
+# dbus-launch --exit-with-session ~/newdwm/dwm > ~/newdwm/log 2>&1
+sxhkd &
+dbus-launch --exit-with-session dwm > ~/newdwm/log 2>&1
+# exec 

@@ -1,0 +1,44 @@
+# increase sensitivity
+super + w
+	cat ~/.keymouse_sens ;\
+	echo $(( $(cat ~/.keymouse_sens) + 10 )) > ~/.keymouse_sens
+
+# decrease sensitivity
+super + m
+	cat ~/.keymouse_sens ;\
+	echo $(( $(cat ~/.keymouse_sens) - 10 )) > ~/.keymouse_sens
+
+# up
+super + u
+    xdotool mousemove_relative 0 -$(cat ~/.keymouse_sens)
+
+# down
+super + h
+    xdotool mousemove_relative 0 $(cat ~/.keymouse_sens)
+
+# left
+super + o
+    xdotool mousemove_relative -- -$(cat ~/.keymouse_sens) 0
+
+# right
+super + n
+    xdotool mousemove_relative $(cat ~/.keymouse_sens) 0
+
+# up right
+super + l 
+    xdotool mousemove_relative $(cat ~/.keymouse_sens) -$(cat ~/.keymouse_sens)
+
+# up left
+super + comma
+    xdotool mousemove_relative -- -$(cat ~/.keymouse_sens) -$(cat ~/.keymouse_sens)
+
+# down left
+super + b
+    xdotool mousemove_relative -- -$(cat ~/.keymouse_sens) $(cat ~/.keymouse_sens)
+
+# down right
+super + z
+    hdotool mousemove_relative $(cat ~/.keymouse_sens) $(cat ~/.keymouse_sens)
+
+super + space
+    xdotool click 1
