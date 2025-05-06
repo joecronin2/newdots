@@ -26,7 +26,7 @@ SAVEHIST=10000
 
 # aliases
 blok2_dir=/home/joe/projects/vootiizaavii86/webapp/dashboard
-alias fl="flask --app $blok2_dir run --debug"
+alias fl="python -m flask --app $blok2_dir run --debug"
 alias fld="cd $blok1_dir/..; USERS_CSV=$blok1_dir/users.csv DB_DIR=$blok1_dir/db/ gunicorn secretsapp:app"
 alias ct="oneko -tofocus -speed 30 & disown"
 
@@ -48,8 +48,9 @@ alias jssh="ssh joe@192.168.4.129"
 alias br="librewolf"
 alias sosh="source ~/.zshrc"
 alias m="make"
-alias u="nvim"
+alias i="nvim"
 alias te="tar -xvf"
+alias e="eza --icons --group-directories-first -ahrMg "
 alias a="eza --icons --group-directories-first -lahrMg "
 alias at="a -T"
 alias b="cd .."
@@ -58,6 +59,7 @@ alias c="clear"
 alias shd="doas poweroff"
 alias alg="ls | rg"
 alias ag="a | rg"
+alias eg="e | rg"
 alias ff="fastfetch"
 
 # git aliases
@@ -87,13 +89,13 @@ alias ctbloody="figlet -f Bloody.flf"
 alias ctansi="figlet -f 'ANSI Regular.flf'"
 alias ctansishadow="figlet -f 'ANSI Shadow.flf'"
 
-alias i="openproject && nvim"
+alias u="openproject && nvim"
 
 # debug
 alias delcores="fd core /tmp -x rm -v"
 alias lcore="fd core /tmp | sort -r | fzf"
 
-alias start_ssh_agent="eval \"$(ssh-agent -s)\"; ssh-add ~/.ssh/sshkey"
+alias start_ssh_agent="eval \"$(ssh-agent -s)\"; ssh-add ~/.ssh/id_ed25519"
 
 alias kb_us="setxkbmap us -option caps:escape"
 alias kb_dvorak="setxkbmap us dvorak -option caps:swapescape"
@@ -126,7 +128,7 @@ alias cb="cbonsai -l"
 alias mac="make clean"
 alias md="make debug"
 
-alias alconf="nvim ~/.zsh/aliases.sh"
+alias shc="nvim ~/.zshrc"
 alias resh="c; source ~/.zshrc"
 alias q="qalc"
 alias crt="cool-retro-term"
@@ -139,12 +141,16 @@ ao() {
 	o $1 && eza --icons -- $2
 }
 
-ou() {
+oi() {
 	o $1 && u -- $2
 }
 
 mnl() {
 	man -Tpdf $1 | zathura - & disown
+}
+
+en() {
+	"$@" & disown; exit
 }
 
 _direnv_hook() {
