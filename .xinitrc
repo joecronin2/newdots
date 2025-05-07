@@ -32,7 +32,6 @@ xrandr --output HDMI-1 --mode 2560x1440 --rate 120.00 --set "Broadcast RGB" "Ful
 
 # Set wallpaper
 xwallpaper --maximize /home/joe/Wallpapers/dark_mountain.jpg &
-setxkbmap dvcustom -option caps:swapescape
 
 # Start background services
 # dbus-run-session --sh-syntax --exit-with-session &
