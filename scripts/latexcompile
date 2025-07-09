@@ -1,5 +1,5 @@
 #!/bin/sh
 
-TEXFILE=user_documentatie.tex
+TEXFILE=$1
 echo $TEXFILE | entr -a pdflatex -interaction nonstopmode -shell-escape $TEXFILE &
 zathura "$(echo $TEXFILE | sed 's/\.tex$/\.pdf/')" &

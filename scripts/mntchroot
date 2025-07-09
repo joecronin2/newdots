@@ -25,3 +25,5 @@ bind_resolv() {
 	mount -v --bind /etc/resolv.conf $mountpoint/etc/resolv.conf
 }
 
+mount_kvfs
+bind_resolv

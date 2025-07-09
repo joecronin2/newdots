@@ -32,18 +32,20 @@ xrandr --output HDMI-1 --mode 2560x1440 --rate 120.00 --set "Broadcast RGB" "Ful
 
 # Set wallpaper
 xwallpaper --maximize /home/joe/Wallpapers/dark_mountain.jpg &
+# setxkbmap dvcustom -option caps:swapescape
 
 # Start background services
 # dbus-run-session --sh-syntax --exit-with-session &
-unclutter --timeout 5 &
+# unclutter --timeout 5 &
 dwmblocks &
 # qbittorrent &
 picom &
 # oneko -tofocus -speed 30 &
 alacritty &
+qbittorrent &
 gentoo-pipewire-launcher &
 wpctl set-volume @DEFAULT_AUDIO_SINK@ 0% &
 # dbus-launch --exit-with-session ~/newdwm/dwm > ~/newdwm/log 2>&1
-sxhkd &
-dbus-launch --exit-with-session dwm > ~/newdwm/log 2>&1
+# sxhkd &
+dbus-launch --exit-with-session dwm > ~/dwmlog 2>&1
 # exec 
