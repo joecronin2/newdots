@@ -45,6 +45,7 @@ openproject () {
 alias jssh="ssh joe@192.168.4.129"
 
 # essential
+alias d="doas"
 alias br="librewolf"
 alias sosh="source ~/.zshrc"
 alias m="make"
