@@ -1,8 +1,0 @@
-#!/bin/sh
-
-DOC=$1
-TMP=/tmp/a.pdf
-
-echo "Exporting $TMP..."
-zathura $TMP
-echo $DOC | entr -r groff -ms $DOC -Tpdf > $TMP

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+DEV=/dev/sda
+
+doas cryptsetup luksOpen "$DEV"2 root
+doas mount /dev/mapper/root /mnt
+doas mount "$DEV"1 /mnt/boot
