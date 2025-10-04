@@ -1,5 +1,5 @@
 # zmodload zsh/zprof
-source /opt/python_venv/main/bin/activate
+source ~/.venv/main/bin/activate
 
 prompt_top="╭─%F{green}%n@%m%f %F{blue}%~ %f" 
 prompt_bottom="╰──$ " 
