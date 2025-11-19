@@ -1,6 +1,9 @@
 # zmodload zsh/zprof
 source ~/.venv/main/bin/activate
 
+# line cursor
+# echo -ne '\e[6 q'
+
 prompt_top="╭─%F{green}%n@%m%f %F{blue}%~ %f" 
 prompt_bottom="╰──$ " 
 PROMPT="$prompt_top"$'\n'"$prompt_bottom"

@@ -14,3 +14,15 @@ opacity = 0.5
 [font]
 # /usr/share/fonts/TTF/JetBrainsMonoNerdFont-Regular.ttf
 normal.family = "0xProto Nerd Font"
+
+[cursor.style]
+	shape = "Beam"
+	blinking = "On"
+
+[cursor]
+	blink_interval = 500
+	blink_timeout = 10
+
+# [bell]
+# 	animation = "Ease"
+# 	duration = 10
