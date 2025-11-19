@@ -7,7 +7,6 @@ PROMPT="$prompt_top"$'\n'"$prompt_bottom"
 
 source ~/.zsh_comps
 source ~/.zsh_plugins/doas.zsh
-source ~/.zsh_plugins/zsh-vi-mode/zsh-vi-mode.zsh
 source ~/.zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source ~/.zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
@@ -143,7 +142,7 @@ ao() {
 }
 
 oi() {
-	o $1 && u -- $2
+	o $1 && i -- $2
 }
 
 mnl() {
@@ -153,6 +152,17 @@ mnl() {
 en() {
 	"$@" & disown; exit
 }
+
+explore() {
+	while true; do
+		local dir
+		item="$({ echo ".."; fd . -d1 -td; } | fzf --prompt="  $(pwd) > ")" || break
+		cd "$dir"
+	done
+}
+zle_explore() { explore; zle reset-prompt; }
+zle -N zle_explore
+bindkey '^g' zle_explore
 
 _direnv_hook() {
   trap -- '' SIGINT;
