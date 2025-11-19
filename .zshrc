@@ -153,22 +153,19 @@ en() {
 	"$@" & disown; exit
 }
 
+
 explore() {
 	while true; do
-		local dir
-		item="$({ echo ".."; fd . -d1 -td; } | fzf --prompt="  $(pwd) > ")" || break
-		cd "$dir"
+		local item
+		item="$({ echo ".."; fd . -td -d1; } | fzf --prompt="  $(pwd) > ")" || break
+		cd "$item"
 	done
 }
+
 zle_explore() { explore; zle reset-prompt; }
 zle -N zle_explore
 bindkey '^g' zle_explore
 
-_direnv_hook() {
-  trap -- '' SIGINT;
-  eval "$("/usr/bin/direnv" export zsh)";
-  trap - SIGINT;
-}
 typeset -ag precmd_functions;
 if [[ -z "${precmd_functions[(r)_direnv_hook]+1}" ]]; then
   precmd_functions=( _direnv_hook ${precmd_functions[@]} )
