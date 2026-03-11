@@ -4,7 +4,11 @@ source ~/.venv/main/bin/activate
 # line cursor
 # echo -ne '\e[6 q'
 
-prompt_top="╭─%F{green}%n@%m%f %F{blue}%~ %f" 
+# extended globbing
+setopt dot_glob
+setopt extended_glob
+
+prompt_top="╭─%F{green}%n@%m%f  %F{blue}%~ %f" 
 prompt_bottom="╰──$ " 
 PROMPT="$prompt_top"$'\n'"$prompt_bottom"
 
@@ -47,6 +51,7 @@ openproject () {
 alias jssh="ssh joe@192.168.4.129"
 
 # essential
+alias py="python"
 alias d="doas"
 alias br="librewolf"
 alias sosh="source ~/.zshrc"
@@ -110,7 +115,7 @@ alias aoeu="kb_us"
 alias getbattery="cat /sys/class/power_supply/BAT1/capacity"
 alias xrate="xset r rate 180 100"
 
-alias snap="doas btrfs subvolume snapshot / /.snapshots/$(date -Iminutes) && doas grub-mkconfig -o /boot/grub/grub.cfg"
+alias snap="doas btrfs subvolume snapshot / /.snapshots/$(date +%Y-%m-%d_%H-%M)"
 
 alias cpssh="keepassxc-cli clip /home/joe/Passwords.kdbx 'SSH key'"
 
@@ -156,13 +161,25 @@ en() {
 	"$@" & disown; exit
 }
 
+brman() {
+	FILE=/tmp/man_$(uuidgen).html
+	man -Thtml "$@" > $FILE
+	librewolf $FILE
+	sleep 0.1
+	rm $FILE
+}
 
 explore() {
+	local item
 	while true; do
-		local item
-		item="$({ echo ".."; fd . -td -d1; } | fzf --prompt="  $(pwd) > ")" || break
-		cd "$item"
+		item="$({ echo ".."; fd -td -d1; } | fzf --prompt="  $(pwd) > ")" || break
+		cd "$item" || break
 	done
+	# eza --icons -flagh
+}
+
+x() {
+	dir=$(fd -td . / | fzf) && cd "$dir"
 }
 
 zle_explore() { explore; zle reset-prompt; }
@@ -182,3 +199,8 @@ fi
 # zprof
 
 source <(fzf --zsh)
+
+alias francinette=/home/joe/francinette/tester.sh
+
+alias paco=/home/joe/francinette/tester.sh
+setopt extended_glob
