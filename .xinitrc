@@ -46,7 +46,8 @@ dwmblocks &
 picom &
 alacritty &
 qbittorrent &
+# gentoo-pipewire-launcher &
+# wpctl set-volume @DEFAULT_AUDIO_SINK@ 0% &
 gentoo-pipewire-launcher &
-wpctl set-volume @DEFAULT_AUDIO_SINK@ 0% &
-# dbus-launch --exit-with-session ~/newdwm/dwm > ~/newdwm/log 2>&1
-dbus-launch --exit-with-session dwm > ~/dwmlog 2>&1
+exec dbus-launch --exit-with-session dwm > ~/dwmlog 2>&1
+# exec dwm > ~/dwmlog 2>&1
