@@ -1,6 +1,6 @@
-# import = ["/home/joe/.config/alacritty/themes/tokyo-night.toml"]
 [general]
 import = ["/home/joe/.config/alacritty/themes/everforest-dark.toml"]
+# import = ["/home/joe/.config/alacritty/themes/tokyo-night.toml"]
 # shell = "/bin/tmux"
 [terminal]
 # program = "/bin/zsh"

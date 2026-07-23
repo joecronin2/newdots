@@ -49,5 +49,10 @@ qbittorrent &
 # gentoo-pipewire-launcher &
 # wpctl set-volume @DEFAULT_AUDIO_SINK@ 0% &
 gentoo-pipewire-launcher &
+setxkbmap custom -option caps:swapescape
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+fcitx5 -d
 exec dbus-launch --exit-with-session dwm > ~/dwmlog 2>&1
 # exec dwm > ~/dwmlog 2>&1
