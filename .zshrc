@@ -1,5 +1,5 @@
 # zmodload zsh/zprof
-source ~/.venv/main/bin/activate
+# source ~/.venv/main/bin/activate  # commented out by conda initialize
 
 # line cursor
 # echo -ne '\e[6 q'
@@ -21,6 +21,7 @@ export PROJECT_DIR=/home/joe/projects
 
 path+=(~/scripts)
 path+=(/home/joe/.cargo/bin)
+path+=(~/.local/bin)
 
 export HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -33,7 +34,6 @@ SAVEHIST=10000
 # aliases
 blok2_dir=/home/joe/projects/vootiizaavii86/webapp/dashboard
 alias fl="python -m flask --app $blok2_dir run --debug"
-alias fld="cd $blok1_dir/..; USERS_CSV=$blok1_dir/users.csv DB_DIR=$blok1_dir/db/ gunicorn secretsapp:app"
 alias ct="oneko -tofocus -speed 30 & disown"
 
 ###
@@ -42,7 +42,7 @@ alias ophost="joe@192.168.4.133"
 openproject () {
 	project=$(ls $PROJECT_DIR | xargs -I {} zoxide query --score {} 2>/dev/null | sed 's./home/joe/projects/..' | sort | awk '{print $2}' | fzf)
 	if [ -z "$project" ]; then
-		exit 1;
+		return 1;
 	else # only cd to project_dir if an option was selected
 		cd "$PROJECT_DIR/$project"
 	fi
@@ -66,7 +66,7 @@ alias reb="doas reboot"
 alias c="clear"
 alias shd="doas poweroff"
 alias alg="ls | rg"
-alias ag="a | rg"
+alias ag="eza -a | rg -i"
 alias eg="e | rg"
 alias ff="fastfetch"
 
@@ -103,7 +103,7 @@ alias u="openproject && nvim"
 alias delcores="fd core /tmp -x rm -v"
 alias lcore="fd core /tmp | sort -r | fzf"
 
-alias start_ssh_agent="eval \"$(ssh-agent -s)\"; ssh-add ~/.ssh/id_ed25519"
+alias start_ssh_agent='eval "$(ssh-agent -s)"; ssh-add ~/.ssh/id_ed25519'
 
 alias kb_us="setxkbmap us -option caps:escape"
 alias kb_dvorak="setxkbmap us dvorak -option caps:swapescape"
@@ -171,11 +171,20 @@ brman() {
 
 explore() {
 	local item
+	# ponytail: mode marker lives in the prompt (d=dirs, a=all) so ctrl-f can flip it in place
+	local dirs='echo ..; fd -td -d1 --color=always'
+	local all='echo ..; fd -d1 --color=always'
 	while true; do
-		item="$({ echo ".."; fd -td -d1; } | fzf --prompt="  $(pwd) > ")" || break
-		cd "$item" || break
+		item="$(eval "$dirs" | fzf --ansi --prompt="d  $(pwd) > " \
+			--bind "ctrl-f:transform:[[ \$FZF_PROMPT == d* ]] && echo \"change-prompt(a  \$PWD > )+reload($all)\" || echo \"change-prompt(d  \$PWD > )+reload($dirs)\"")" || break
+		if [[ -d $item ]]; then
+			cd "$item" || break
+		else
+			echo "$item"
+			return
+		fi
 	done
-	# eza --icons -flagh
+	eza --icons -flagh
 }
 
 x() {
@@ -204,3 +213,19 @@ alias francinette=/home/joe/francinette/tester.sh
 
 alias paco=/home/joe/francinette/tester.sh
 setopt extended_glob
+
+# # >>> conda initialize >>>
+# # !! Contents within this block are managed by 'conda init' !!
+# __conda_setup="$('/home/joe/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+# if [ $? -eq 0 ]; then
+#     eval "$__conda_setup"
+# else
+#     if [ -f "/home/joe/miniconda3/etc/profile.d/conda.sh" ]; then
+#         . "/home/joe/miniconda3/etc/profile.d/conda.sh"
+#     else
+#         export PATH="/home/joe/miniconda3/bin:$PATH"
+#     fi
+# fi
+# unset __conda_setup
+# # <<< conda initialize <<<
+
