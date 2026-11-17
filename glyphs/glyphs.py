@@ -16,7 +16,7 @@ FAV = [  # (char, note)
     ("々","repeat previous word"),("⌬","benzene ring"),("⏣","benzene ring w/ circle"),("⸮","irony point · maybe?"),
     ("ꙮ","many-eyed seraphim"),("ꙭ","double monocular o (essential)"),("ꙫ","binocular o"),("ꙩ","monocular o"),
     ("ꭘ","x with long left leg & ring"),("ꭔ","chi with low right ring"),("ꭡ","iotified e"),("ƣ","oi"),("Ꙛ","blended yus"),("ѿ","ot · from (one-char word)"),("ѡ","omega"),("ꙍ","broad omega"),("ʬ","bilabial percussive"),("ꙙ","closed little yus"),
-    ("Φ","capital phi"),("Ⲁ","coptic alfa"),("Ⳣ","old nubian wau"),("㆒","kanbun one"),("㆝","kanbun heaven"),("㆞","kanbun earth"),("㆟","kanbun man"),
+    ("Φ","capital phi · particle?"),("Ⲁ","coptic alfa · particle?"),("ⲁ","coptic alfa"),("Ⳣ","old nubian wau · particle?"),("ⳣ","old nubian wau"),("ꙛ","blended yus"),("ꙕ","reversed yu"),("Ѿ","ot · particle?"),("㆒","kanbun one"),("㆝","kanbun heaven"),("㆞","kanbun earth"),("㆟","kanbun man"),
     ("⳦","coptic pi ro"),("ⲷ","coptic cryptogrammic eie"),("ⳃ","coptic crossed shei · sh"),("ɤ","ram's horn"),("Ꙕ","reversed yu"),
     ("ヿ","koto · thing"),("ゟ","yori · from/than"),("ゑ","we (archaic)"),("ゐ","wi (archaic)"),("ヱ","we katakana"),("ヰ","wi katakana"),
     ("ゕ","small ka"),("ゖ","small ke"),("ㇱ","ainu small shi"),("ㇰ","ainu small ku"),("ㇷ゚","ainu small pu"),("〼","masu mark"),
@@ -95,8 +95,25 @@ RULES = [  # counts from the vault, Clippings excluded
 
 PLAN = {"rows": [[k for k, _ in row] for row in ROWS], "keys": KEYS, "rules": RULES}
 
+# k = type + 3*latinish.  type: 0 letter, 1 logogram/picture, 2 symbol/mark/number.
+# latinish = plain a-z wearing decorations: diacritics, hooks, strokes, turned/reversed, small caps, math/fancy/circled styles
+LOGO = re.compile(r"hieroglyph|cuneiform|linear a|linear b ideogram|tangut|khitan|nushu|kanbun|cjk|kangxi|ideographic|yi syllables|yi radicals", re.I)
+LATIN_NAME = re.compile(r"^latin (?:small |capital )?letter (?:[a-z]+ )*?[a-z](?: with .+)?$")
+def block_of(cp):
+    return next((t for t, lo, hi in BLOCKS if lo <= cp <= hi), "")
+def kcode(cp, block=None):
+    c = chr(cp); cat = ud.category(c); nm = ud.name(c, "").lower()
+    block = block if block is not None else block_of(cp)
+    ty = 1 if LOGO.search(block) and (cat[0] == "L" or cat == "So") else 0 if cat[0] == "L" else 2
+    kc, d = ud.normalize("NFKC", c), ud.normalize("NFD", c)
+    li = (cat[0] == "L" or cat == "So") and ((len(kc) == 1 and kc.isascii() and kc.isalpha() and kc != c)
+          or (len(d) > 1 and d[0].isascii() and d[0].isalpha())
+          or bool(LATIN_NAME.match(nm)))
+    return ty + 3 * li
+
 def tile(ch, label, cls=""):
-    return f'<button class="t {cls}" data-c="{html.escape(ch)}" title="{html.escape(label)}"><span>{html.escape(ch)}</span><small>{html.escape(label)}</small></button>'
+    k = f' data-ty="{kcode(ord(ch)) % 3}"' + (' data-li' if kcode(ord(ch)) >= 3 else '') if len(ch) == 1 and "nf" not in cls else ""
+    return f'<button class="t {cls}"{k} data-c="{html.escape(ch)}" title="{html.escape(label)}"><span>{html.escape(ch)}</span><small>{html.escape(label)}</small></button>'
 
 def name(cp):
     return f"U+{cp:04X} {ud.name(chr(cp), '').lower()}"
@@ -110,11 +127,14 @@ for title, lo, hi in BLOCKS:
     cps = [cp for cp in range(lo, hi + 1) if ud.category(chr(cp)) not in ("Mn", "Me", "Cc", "Cf", "Zs", "Zl", "Zp", "Cn", "Co", "Cs")]
     if not cps:
         continue
-    if not subprocess.run(["fc-list", f":charset={cps[0]:x}", "family"], capture_output=True, text=True).stdout.strip():
+    fams = subprocess.run(["fc-list", f":charset={cps[0]:x}", "family"], capture_output=True, text=True).stdout.split("\n")
+    fams = [f for f in fams if f.strip()]
+    if not fams:
         nofont.append(title); continue
+    pixel = all("unifont" in f.lower() for f in fams)
     # names like "tangut ideograph-17000" say nothing; the block title covers them
     rtl = sum(ud.bidirectional(chr(cp)) in ("R", "AL") for cp in cps) * 2 > len(cps)
-    blocks.append([title, [[cp, "" if re.search(r"-[0-9A-F]{4,6}$", ud.name(chr(cp), "-0000")) else ud.name(chr(cp)).lower(), "LN".find(ud.category(chr(cp))[0]) % 3] for cp in cps], int(rtl)])
+    blocks.append([title, [[cp, "" if re.search(r"-[0-9A-F]{4,6}$", ud.name(chr(cp), "-0000")) else ud.name(chr(cp)).lower(), kcode(cp, title)] for cp in cps], int(rtl), int(pixel)])
     total += len(cps)
 print("right-to-left blocks:", sum(b[2] for b in blocks), "with", sum(len(b[1]) for b in blocks if b[2]), "chars")
 print("no font installed, skipped:", ", ".join(nofont) or "none")
@@ -162,9 +182,17 @@ input.dup{border-color:var(--bad);color:var(--bad)} .on-key{font-size:12px;color
 .t.used{border-color:var(--glyph)}
 .hide{display:none} [hidden]{display:none!important}
 body.movefavs :is(.static, #blocks, #results, #fit) .t.fav{display:none}
+body.case-low :is(.static, #blocks, #results) .t.cu, body.case-up :is(.static, #blocks, #results) .t:not(.cu){display:none}
+body.ty-0 :is(.static, #blocks, #results) .t[data-ty]:not([data-ty="0"]){display:none}
+body.ty-1 :is(.static, #blocks, #results) .t[data-ty]:not([data-ty="1"]){display:none}
+body.ty-2 :is(.static, #blocks, #results) .t[data-ty]:not([data-ty="2"]){display:none}
+body.lat-hide :is(.static, #blocks, #results) .t[data-li], body.lat-only :is(.static, #blocks, #results) .t[data-ty]:not([data-li]){display:none}
 .fitg{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))} .fitg .t span{font-size:30px;white-space:nowrap} .fitg .t span i{font-style:normal;color:var(--dim);opacity:var(--ctx,.55)}
 .t{position:relative;user-select:none} .t.fav::after{content:"★";position:absolute;top:2px;right:5px;font-size:11px;color:var(--glyph)}
 details.blk{border-top:1px solid var(--line)} details.blk summary{cursor:pointer;padding:8px 0;font-size:16px} details.blk summary em{color:var(--dim);font-style:normal;font-size:13px}
+details.blk.done > summary{color:var(--dim)} details.blk.done > summary::after{content:" ✓";color:var(--glyph)}
+#toc a.done{color:var(--dim);text-decoration:line-through} body.hide-checked :is(details.blk.done, #toc a.done){display:none}
+.chk{vertical-align:middle;margin-right:4px}
 details.blk .g{padding-bottom:12px;content-visibility:auto;contain-intrinsic-size:auto 400px} .toc summary{cursor:pointer;color:var(--hi);margin-bottom:8px}
 #toc{columns:3 220px;font-size:13px;margin-bottom:12px} #toc a{display:block;color:var(--fg);text-decoration:none;padding:1px 0} #toc a:hover{color:var(--hi)} #toc em{color:var(--dim);font-style:normal}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--hi);color:#fff;padding:6px 14px;border-radius:20px;opacity:0;transition:opacity .2s;pointer-events:none}
@@ -190,6 +218,11 @@ __PARTS__
 <h2>everything <em id="bcount"></em></h2>
 <p style="margin:0 0 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
 <button class="b" id="view">latin-fit view</button><button class="b" id="expand">expand all</button><button class="b" id="collapse">collapse all</button>
+<label style="font-size:13px;color:var(--dim)"><input type="checkbox" id="hidechk"> hide checked blocks</label>
+<label style="font-size:13px;color:var(--dim)"><input type="checkbox" id="sortfit"> sort inside blocks by latin fit</label>
+<label style="font-size:13px;color:var(--dim)">type <select id="typef"><option value="">any</option><option value="0">letters</option><option value="1">logograms / pictures</option><option value="2">symbols & marks</option></select></label>
+<label style="font-size:13px;color:var(--dim)">latin-ish <select id="latf"><option value="">any</option><option value="hide">hide decorated latin</option><option value="only">only decorated latin</option></select></label>
+<label style="font-size:13px;color:var(--dim)">case <select id="casef"><option value="">any</option><option value="low">lowercase + caseless (in-word picks)</option><option value="up">capitals only (particles)</option></select></label>
 <label style="font-size:13px;color:var(--dim)"><input type="checkbox" id="rtl"> show right-to-left scripts (hebrew, arabic, phoenician…)</label></p>
 <details class="toc"><summary>jump to a block</summary><div id="toc"></div></details>
 <div id="results" class="g" hidden></div><p id="rinfo" class="legend" hidden></p>
@@ -221,11 +254,13 @@ function parseMd(txt) {
     p.rules.push({ g, r, kind: kind || '?', uses: +uses || 0, status: status || 'maybe', note: note || '' });
   for (const [id, ...lv] of table(sec.keys)) if (p.keys[id]) p.keys[id] = [0, 1, 2, 3].map(i => lv[i] ?? '');
   p.favs = (sec.favourites || []).join(' ').split(/\s+/).filter(Boolean);
+  p.checked = (sec.checked || []).filter(l => /^\s*-\s+/.test(l)).map(l => l.replace(/^\s*-\s+/, '').trim());
   return p;
 }
-const start = () => parseMd(SPEC) || structuredClone(DEF);
+const start = () => { const p = parseMd(SPEC) || structuredClone(DEF); p.favs ??= []; p.checked ??= []; return p; };
 if (!plan || !plan.keys) plan = start();
 plan.favs ??= [];
+plan.checked ??= [];
 let favSet = new Set(plan.favs);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(plan)); } catch (e) {} };
 const $ = id => document.getElementById(id);
@@ -280,6 +315,7 @@ function md() {
   s += '\n## keys\n\n| key | base | shift | glyph | glyph+shift |\n|---|---|---|---|---|\n';
   for (const row of DEF.rows) for (const id of row) s += `| ${id} | ${plan.keys[id].map(cell).join(' | ')} |\n`;
   s += '\n## favourites\n\n' + plan.favs.join(' ') + '\n';
+  s += '\n## checked\n\n' + plan.checked.map(t => '- ' + t + '\n').join('');
   return s;
 }
 
@@ -314,30 +350,53 @@ $('impf').onchange = async e => {
   const p = parseMd(await f.text());
   if (!p) return toast("that doesn't look like a glyphs.md");
   plan = Object.assign(p, { showRtl: plan.showRtl, moveFavs: plan.moveFavs, ctx: plan.ctx });
-  sel = null; save(); render(); renderFavs(); toast(`imported ${p.rules.length} rules · ${p.favs.length} favourites`);
+  sel = null; save(); render(); renderFavs(); renderChecks(); toast(`imported ${p.rules.length} rules · ${p.favs.length} favourites`);
   e.target.value = '';
 };
 $('add').onclick = () => { plan.rules.unshift({ g: '', r: '', kind: 'word', uses: 0, status: 'maybe', note: '' }); save(); renderRules(); };
 $('sort').onclick = () => { plan.rules.sort((a, b) => (b.uses || 0) - (a.uses || 0)); save(); renderRules(); };
 $('copy').onclick = () => navigator.clipboard.writeText(md()).then(() => toast('copied glyphs.md'), () => toast('copy failed, use download'));
 $('dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md()], { type: 'text/markdown' })); a.download = 'glyphs.md'; a.click(); };
-$('reset').onclick = () => { if (confirm('throw away browser edits and go back to glyphs.md as it was when this page was built?')) { const f = plan.favs; plan = start(); if (!SPEC) plan.favs = f; sel = null; save(); render(); renderFavs(); } };
+$('reset').onclick = () => { if (confirm('throw away browser edits and go back to glyphs.md as it was when this page was built?')) { const f = plan.favs; plan = start(); if (!SPEC) plan.favs = f; sel = null; save(); render(); renderFavs(); renderChecks(); } };
 const usedSet = () => new Set(plan.rules.filter(r => r.status !== 'drop').map(r => r.g));
 const hex = cp => 'U+' + cp.toString(16).toUpperCase().padStart(4, '0');
-function tileHtml(cp, nm, bt, used) {
+const isUp = c => c !== c.toLowerCase();  // has a lowercase form = it's a capital
+const kattr = k => k === undefined ? '' : ` data-ty="${k % 3}"${k >= 3 ? ' data-li' : ''}`;
+function tileHtml(cp, nm, bt, used, k) {
   const c = String.fromCodePoint(cp), label = `${hex(cp)} ${nm || bt.toLowerCase()}`;
-  return `<button class="t${used.has(c) ? ' used' : ''}${favSet.has(c) ? ' fav' : ''}" data-c="${esc(c)}" title="${esc(label)}"><span>${esc(c)}</span><small>${esc(nm || hex(cp))}</small></button>`;
+  return `<button class="t${isUp(c) ? ' cu' : ''}${used.has(c) ? ' used' : ''}${favSet.has(c) ? ' fav' : ''}"${kattr(k)} data-c="${esc(c)}" title="${esc(label)}"><span>${esc(c)}</span><small>${esc(nm || hex(cp))}</small></button>`;
 }
-$('bcount').textContent = `${B.length} blocks · open one to load it`;
+
 $('toc').innerHTML = B.map(([t, cs], i) => `<a href="#b${i}" data-open="${i}" class="${B[i][2] ? 'rtlb' : ''}">${esc(t)} <em>${cs.length}</em></a>`).join('');
-$('blocks').innerHTML = B.map(([t, cs], i) => `<details class="blk${B[i][2] ? ' rtlb' : ''}" id="b${i}" data-i="${i}"><summary>${esc(t)} <em>${cs.length}</em></summary><div class="g"></div></details>`).join('');
-$('blocks').addEventListener('toggle', e => {
-  const d = e.target;
-  if (!d.open || d.dataset.done) return;
+$('blocks').innerHTML = B.map(([t, cs], i) => `<details class="blk${B[i][2] ? ' rtlb' : ''}" id="b${i}" data-i="${i}"><summary><input type="checkbox" class="chk" data-i="${i}" title="mark this block as checked"> ${esc(t)} <em>${cs.length}</em></summary><div class="g"></div></details>`).join('');
+function renderChecks() {
+  const done = new Set(plan.checked);
+  B.forEach(([t], i) => {
+    const d = $('b' + i), on = done.has(t);
+    d.classList.toggle('done', on); d.querySelector('.chk').checked = on;
+    document.querySelector(`#toc a[data-open="${i}"]`).classList.toggle('done', on);
+  });
+  const n = B.filter(([t]) => done.has(t)).length;
+  $('bcount').textContent = `${B.length} blocks · ${n} checked · open one to load it`;
+}
+document.addEventListener('change', e => {
+  if (!e.target.matches('.chk')) return;
+  const t = B[e.target.dataset.i][0], i = plan.checked.indexOf(t);
+  if (e.target.checked && i < 0) plan.checked.push(t); else if (!e.target.checked && i >= 0) plan.checked.splice(i, 1);
+  save(); renderChecks();
+});
+renderChecks();
+$('hidechk').checked = !!plan.hideChecked;
+document.body.classList.toggle('hide-checked', !!plan.hideChecked);
+$('hidechk').onchange = e => { plan.hideChecked = e.target.checked; save(); document.body.classList.toggle('hide-checked', plan.hideChecked); };
+async function renderBlock(d) {
   d.dataset.done = 1;
+  if (plan.sortFit) await getFit();
   const [t, cs] = B[d.dataset.i], used = usedSet();
-  d.querySelector('.g').innerHTML = cs.map(([cp, nm]) => tileHtml(cp, nm, t, used)).join('');
-}, true);
+  const list = plan.sortFit ? [...cs].sort((a, b) => byFit(a[0], b[0])) : cs;
+  d.querySelector('.g').innerHTML = list.map(([cp, nm, k]) => tileHtml(cp, nm, t, used, k)).join('');
+}
+$('blocks').addEventListener('toggle', e => { const d = e.target; if (d.open && !d.dataset.done) renderBlock(d); }, true);
 $('toc').addEventListener('click', e => { const a = e.target.closest('a'); if (a) $('b' + a.dataset.open).open = true; });
 
 let qt, fitMode = false;
@@ -350,13 +409,14 @@ function search(q) {
   for (const [t, cs, rtl] of B) {
     if (rtl && !plan.showRtl) continue;
     const tl = t.toLowerCase();
-    for (const [cp, nm] of cs) {
-      if (String.fromCodePoint(cp) === q || nm.includes(q) || tl.includes(q)) out.push(tileHtml(cp, nm, t, used));
+    for (const [cp, nm, k] of cs) {
+      if (String.fromCodePoint(cp) === q || nm.includes(q) || tl.includes(q)) out.push([cp, nm, t, k]);
       if (out.length >= MAX) break;
     }
     if (out.length >= MAX) break;
   }
-  $('results').innerHTML = out.join('');
+  if (plan.sortFit && fitMap) out.sort((a, b) => byFit(a[0], b[0]));
+  $('results').innerHTML = out.map(([cp, nm, t, k]) => tileHtml(cp, nm, t, used, k)).join('');
   $('rinfo').textContent = out.length >= MAX ? `showing the first ${MAX} matches, narrow it down` : `${out.length} matches`;
 }
 render();
@@ -373,7 +433,7 @@ function renderFavs() {
   favSet = new Set(plan.favs);
   const used = usedSet();
   $('myfavs').innerHTML = plan.favs.length
-    ? plan.favs.map(c => `<button class="t fav${used.has(c) ? ' used' : ''}" data-c="${esc(c)}" title="${esc(nameOf(c))}"><span>${esc(c)}</span><small>${esc(nameOf(c))}</small></button>`).join('')
+    ? plan.favs.map(c => `<button class="t fav${isUp(c) ? ' cu' : ''}${used.has(c) ? ' used' : ''}" data-c="${esc(c)}" title="${esc(nameOf(c))}"><span>${esc(c)}</span><small>${esc(nameOf(c))}</small></button>`).join('')
     : '<p class="legend">nothing yet · double-click any glyph to star it</p>';
   document.querySelectorAll('.t').forEach(t => t.classList.toggle('fav', favSet.has(t.dataset.c)));
 }
@@ -394,6 +454,21 @@ $('rtl').checked = !!plan.showRtl;
 $('rtl').onchange = e => { plan.showRtl = e.target.checked; save(); applyRtl(); search($('q').value.trim().toLowerCase()); };
 applyRtl();
 
+const applyCase = () => {
+  const b = document.body.classList;
+  b.toggle('case-low', plan.caseF === 'low'); b.toggle('case-up', plan.caseF === 'up');
+  for (const i of [0, 1, 2]) b.toggle('ty-' + i, plan.typeF === String(i));
+  b.toggle('lat-hide', plan.latF === 'hide'); b.toggle('lat-only', plan.latF === 'only');
+};
+for (const [id, key] of [['typef', 'typeF'], ['latf', 'latF']]) {
+  $(id).value = plan[key] || '';
+  $(id).onchange = e => { plan[key] = e.target.value; save(); applyCase(); if (fitMode && fitList) showFit(false); };
+}
+document.querySelectorAll('.static .t').forEach(t => [...t.dataset.c].length === 1 && isUp(t.dataset.c) && t.classList.add('cu'));
+$('casef').value = plan.caseF || '';
+$('casef').onchange = e => { plan.caseF = e.target.value; save(); applyCase(); if (fitMode && fitList) showFit(false); };
+applyCase();
+
 $('movefavs').checked = !!plan.moveFavs;
 document.body.classList.toggle('movefavs', !!plan.moveFavs);
 $('movefavs').onchange = e => { plan.moveFavs = e.target.checked; save(); document.body.classList.toggle('movefavs', plan.moveFavs); };
@@ -407,8 +482,16 @@ $('expand').onclick = async () => {
 };
 // latin-fit: measure every glyph as it actually renders and score how close it is to a latin letter
 // (size, height vs ascenders/descenders, sitting on the baseline, letter vs symbol, latin-ish script)
-let fitList = null, fitShown = 0;
+let fitList = null, fitShown = 0, fitMap = null, fitting = null;
+async function getFit() {
+  if (fitList) return;
+  if (!fitting) { toast('measuring 37k glyphs, a few seconds…'); fitting = computeFit(); }
+  fitList = await fitting;
+  fitMap = new Map(fitList.map(x => [x[1], x[0]]));
+}
+const byFit = (a, b) => (fitMap.get(a) ?? 99) - (fitMap.get(b) ?? 99);
 const FIT_PAGE = 1500;
+const JUNK = /legacy computing|box drawing|block elements|braille|sextant|geometric shapes|control pictures|optical character|mahjong|domino|playing cards|chess|musical|ornamental dingbats|enclosed alphanumeric/i;
 const NEAR = /latin|ipa|phonetic|spacing modifier/i, KIN = /greek|cyrillic|coptic|armenian|georgian|glagolitic|gothic|runic|old italic|cherokee|deseret|shavian|osage|vithkuqi|todhri|elbasan|caucasian albanian|ogham|old permic|old hungarian|old turkic|tifinagh|lisu|bamum|vai|nko/i;
 async function computeFit() {
   const ctx = document.createElement('canvas').getContext('2d'), em = 48;
@@ -417,11 +500,27 @@ async function computeFit() {
   const lat = [...'abcdefghijklmnopqrstuvwxyz'].map(m);
   const ref = { xh: m('x').a, asc: Math.max(...[...'bdfhklt'].map(c => m(c).a)), desc: Math.max(...[...'gjpqy'].map(c => m(c).d)),
                 maxW: Math.max(...lat.map(x => x.w)) };
+  // readability: draw at text size and count how often each pixel row flips ink/no-ink. latin tops out around m;
+  // glyphs much busier than that turn into blobs when you read them small
+  const S = 36, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const c2 = cv.getContext('2d', { willReadFrequently: true });
+  c2.font = '24px ' + getComputedStyle(document.body).fontFamily;
+  const busy = ch => {
+    c2.clearRect(0, 0, S, S); c2.fillText(ch, 4, 27);
+    const px = c2.getImageData(0, 0, S, S).data;
+    let flips = 0, rows = 0;
+    for (let y = 0; y < S; y++) {
+      let prev = false, any = false;
+      for (let x = 0; x < S; x++) { const on = px[(y * S + x) * 4 + 3] > 110; if (on !== prev) { flips++; prev = on; } any ||= on; }
+      rows += any;
+    }
+    return rows ? flips / rows : 0;
+  };
+  const busyRef = Math.max(...[...'abcdefghijklmnopqrstuvwxyz'].map(busy));
   const all = [];
   let n = 0;
-  for (const [t, cs, rtl] of B) {
-    if (rtl && !plan.showRtl) continue;
-    const bonus = NEAR.test(t) ? -0.12 : KIN.test(t) ? -0.06 : 0;
+  for (const [t, cs, rtl, pixel] of B) {
+    const bonus = (NEAR.test(t) ? -0.12 : KIN.test(t) ? -0.06 : 0) + (JUNK.test(t) ? 0.5 : 0) + (pixel ? 0.6 : 0);
     for (const [cp, nm, k] of cs) {
       const g = m(String.fromCodePoint(cp)), h = g.a + g.d;
       if (!(g.w > 0) || !(h > 0)) continue;
@@ -430,8 +529,10 @@ async function computeFit() {
             + Math.max(0, g.d - 1.15 * ref.desc) / em * 5       // deeper than descenders
             + Math.max(0, -g.d - 0.08 * em) / em * 3            // floats above the baseline
             + Math.max(0, 0.7 * ref.xh - h) / em * 3            // tiny marks
-            + [0, 0.15, 0.35][k ?? 2] + bonus;
-      all.push([p, cp, nm, t]);
+            + Math.max(0, busy(String.fromCodePoint(cp)) - 1.1 * busyRef) * 0.12   // too busy to read small
+            + [0, 0.2, 0.35][(k ?? 2) % 3] + bonus;
+      if (/\p{P}/u.test(String.fromCodePoint(cp))) p += 0.5;        // dots, commas, brackets
+      all.push([p, cp, nm, t, k, rtl]);
       if (++n % 3000 === 0) { $('fitinfo').textContent = `measuring… ${n} glyphs`; await new Promise(r => setTimeout(r, 0)); }
     }
   }
@@ -439,23 +540,32 @@ async function computeFit() {
 }
 function showFit(more) {
   const used = usedSet(), from = more ? fitShown : 0;
-  fitShown = Math.min(fitList.length, from + FIT_PAGE);
-  const html = fitList.slice(from, fitShown).map(([p, cp, nm, t]) => {
+  const keep = ([, cp, , , k, rtl]) => (!rtl || plan.showRtl) && (!plan.caseF || (plan.caseF === 'up') === isUp(String.fromCodePoint(cp)))
+    && (!plan.typeF || String(k % 3) === plan.typeF) && (!plan.latF || (plan.latF === 'only') === (k >= 3));
+  const fl = fitList.filter(keep);
+  fitShown = Math.min(fl.length, from + FIT_PAGE);
+  const html = fl.slice(from, fitShown).map(([p, cp, nm, t, k]) => {
     const c = String.fromCodePoint(cp), label = `${hex(cp)} ${nm || t.toLowerCase()} · fit ${p.toFixed(2)}`;
-    return `<button class="t${used.has(c) ? ' used' : ''}${favSet.has(c) ? ' fav' : ''}" data-c="${esc(c)}" title="${esc(label)}"><span><i>a</i>${esc(c)}<i>e</i></span><small>${esc(nm || hex(cp))}</small></button>`;
+    return `<button class="t${isUp(c) ? ' cu' : ''}${used.has(c) ? ' used' : ''}${favSet.has(c) ? ' fav' : ''}"${kattr(k)} data-c="${esc(c)}" title="${esc(label)}"><span><i>a</i>${esc(c)}<i>e</i></span><small>${esc(nm || hex(cp))}</small></button>`;
   }).join('');
   if (more) $('fit').insertAdjacentHTML('beforeend', html); else $('fit').innerHTML = html;
-  $('fitinfo').textContent = `best latin fits first · showing ${fitShown} of ${fitList.length} · hover a glyph for its score (lower = fits better)`;
-  $('fitmore').hidden = fitShown >= fitList.length;
+  $('fitinfo').textContent = `best latin fits first · showing ${fitShown} of ${fl.length} · hover a glyph for its score (lower = fits better)`;
+  $('fitmore').hidden = fitShown >= fl.length;
 }
 $('view').onclick = async () => {
   fitMode = !fitMode;
   $('view').textContent = fitMode ? 'block view' : 'latin-fit view';
   $('blocks').hidden = fitMode; $('fitwrap').hidden = !fitMode;
-  if (fitMode && !fitList) { fitList = await computeFit(); }
+  if (fitMode) await getFit();
   if (fitMode) showFit(false);
 };
 $('fitmore').onclick = () => showFit(true);
+$('sortfit').checked = !!plan.sortFit;
+$('sortfit').onchange = async e => {
+  plan.sortFit = e.target.checked; save();
+  for (const d of document.querySelectorAll('details.blk[data-done]')) await renderBlock(d);
+  search($('q').value.trim().toLowerCase());
+};
 const setCtx = v => document.body.style.setProperty('--ctx', v / 100);
 $('ctx').value = plan.ctx ?? 55; setCtx($('ctx').value);
 $('ctx').oninput = e => { plan.ctx = +e.target.value; setCtx(plan.ctx); save(); };
@@ -466,7 +576,7 @@ document.addEventListener('keydown', e => {
   plan.ctx = Math.max(0, Math.min(100, (plan.ctx ?? 55) + (e.key === 'ArrowRight' ? 10 : -10)));
   $('ctx').value = plan.ctx; setCtx(plan.ctx); save();
 });
-$('rtl').addEventListener('change', () => { fitList = null; if (fitMode) computeFit().then(l => { fitList = l; showFit(false); }); });
+$('rtl').addEventListener('change', () => { if (fitMode && fitList) showFit(false); });
 
 $('collapse').onclick = () => document.querySelectorAll('details.blk[open]').forEach(d => d.open = false);
 </script></body></html>"""

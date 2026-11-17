@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Favourite Glyphs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* gold on indigo, after the Blue Qur'an: gold script on indigo-dyed parchment */
+:root {
+  --lapis: #1d2457;
+  --gold: #d8b25c;
+  --gold-hi: #f0d083;
+  --gold-dim: #8f7744;
+  --vellum: #ebe3d0;
+  --silver: #aab3c9;
+  --text: "Alegreya", "Noto Serif";  /* no generic here: the glyph stack after it ends in serif */
+  --glyphs: "Noto Serif", "Noto Sans Coptic", "Noto Sans Runic", "Noto Sans Gothic", "Noto Sans Linear A", "Noto Serif Tangut",
+            "Noto Sans Egyptian Hieroglyphs", "Noto Sans Cuneiform", "Noto Serif Hentaigana", "Noto Sans CJK JP",
+            "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Serif Display", serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--lapis); }
+body { margin: 0; background: var(--lapis); color: var(--vellum); font: 1.125rem/1.65 var(--text), var(--glyphs); }
+
+.intro { max-width: 1040px; margin: 0 auto; padding: 4.5rem 1.25rem 2rem; }
+h1 { font-weight: 500; font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1.05; margin: 0 0 1rem; color: var(--gold); }
+.intro p { max-width: 58ch; margin: 0 0 2.25rem; color: var(--vellum); }
+
+.frieze { display: flex; flex-wrap: wrap; gap: .35rem .9rem; font: 2.3rem/1.2 var(--glyphs); }
+.frieze a { color: var(--gold); text-decoration: none; border-radius: 4px; padding: 0 .1rem; }
+.frieze a:hover { color: var(--gold-hi); }
+@media (prefers-reduced-motion: no-preference) {
+  .frieze a { animation: gild .6s ease-out both; animation-delay: calc(var(--i) * 45ms); }
+  @keyframes gild { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: none; } }
+}
+
+.plate { max-width: 1040px; margin: 0 auto; padding: 3.5rem 1.25rem; display: grid;
+         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 1rem 3.5rem; align-items: center; scroll-margin-top: 1rem; }
+.plate + .plate { border-top: 1px solid color-mix(in srgb, var(--gold-dim) 45%, transparent); }
+.mark { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+.glyph { all: unset; cursor: pointer; font: clamp(7rem, 19vw, 13.5rem)/1.35 var(--glyphs); color: var(--gold); text-align: center; border-radius: 8px; }
+.glyph:hover { color: var(--gold-hi); }
+.cp { font-size: .9rem; color: var(--silver); }
+
+.text { max-width: 62ch; }
+.rank { font-size: 3rem; line-height: 1; color: var(--gold); margin: 0 0 .25rem; font-weight: 500; }
+h2 { font-weight: 500; font-size: 2rem; line-height: 1.15; margin: 0; color: var(--vellum); }
+.where { font-style: italic; color: var(--silver); margin: .15rem 0 1rem; }
+.text p { margin: 0 0 .9rem; }
+.verdict { font-style: italic; color: var(--gold); }
+
+.scores { display: grid; grid-template-columns: max-content 1fr 1.5rem; gap: .3rem .9rem; align-items: center; margin: 1.25rem 0 0; max-width: 26rem; }
+.scores dt { color: var(--silver); font-size: 1rem; }
+.scores dd { margin: 0; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--silver) 22%, transparent); }
+.scores dd span { display: block; height: 100%; width: calc(var(--v) * 10%); border-radius: 3px; background: var(--gold); }
+.scores .n { font-size: 1rem; text-align: right; color: var(--vellum); }
+
+footer { max-width: 1040px; margin: 0 auto; padding: 2rem 1.25rem 4rem; color: var(--silver); font-size: 1rem; }
+footer p { max-width: 62ch; }
+
+a:focus-visible, .glyph:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 6px; }
+#toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); background: var(--gold); color: var(--lapis);
+         padding: .35rem 1rem; border-radius: 999px; font-size: 1rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+
+@media (max-width: 720px) {
+  .plate { grid-template-columns: 1fr; padding: 2.75rem 1.25rem; }
+  .text { max-width: none; }
+}
+</style>
+</head>
+<body>
+<header class="intro">
+  <h1>My favourite glyphs, ranked</h1>
+  <p>Twenty-four characters from your hoard, in the order I like them, with where each one comes from and how well it would work in your script. Click any glyph to copy it.</p>
+  <nav class="frieze" id="frieze" aria-label="Jump to a glyph"></nav>
+</header>
+<main id="plates"></main>
+<footer>
+  <p>"For your script" assumes your rules: lowercase inside words, capitals for particles, nothing ASCII, and everything has to sed back to English. Wide or busy glyphs score lower there however much I love them.</p>
+</footer>
+<div id="toast" role="status"></div>
+<script>
+// [glyph, codepoint, name, where/when, lore, verdict, looks, lore score, for your script]
+const G = [
+  ["ꙮ", "U+A66E", "Multiocular O", "Cyrillic, around 1429",
+   `A monk copying the Book of Psalms around 1429 reached the phrase "many-eyed seraphim" (серафими многоочитии) and, instead of a plain о, drew an o made of eyes. It turns up essentially once in the whole manuscript record, and Unicode added it in 2014 anyway. In 2022 it was redrawn with ten eyes instead of seven, after someone went back to the manuscript and counted.`,
+   `One scribe's joke, made permanent by a standards committee. Nothing beats it.`, 10, 10, 3],
+  ["⁊", "U+204A", "Tironian et", "Roman shorthand, 1st century BC",
+   `Marcus Tullius Tiro was Cicero's secretary, enslaved and later freed, and he's credited with a shorthand for taking down speeches as fast as they were spoken. Almost all of it died out, but his sign for et, "and", kept going through a thousand years of monks. It's still on signs in Ireland, standing for agus.`,
+   `A 2,000-year-old "and" that still works. Your ⁊ = and pick is historically correct.`, 7, 10, 10],
+  ["þ", "U+00FE", "Thorn", "Runes, then Old English",
+   `It started as the rune ᚦ, called þurs ("giant") in the Norse rune poems and þorn in the Old English one. Scribes kept it when they moved to the Latin alphabet, because Latin had no letter for th. Early printers using type from the continent had no þ and used y instead, which is why "ye olde" was always meant to be read "the olde". Icelandic never gave it up.`,
+   `The first glyph your fingers learned. A sentimental pick, but it's earned it.`, 8, 9, 10],
+  ["ȝ", "U+021D", "Yogh", "Middle English",
+   `Middle English used yogh for the throaty gh sound and for y: niȝt for night, ȝe for ye. When printers swapped it for the nearest-looking letter, z, they left traces that still trip people up. The Scottish names Menzies and Dalziel are traditionally said "Mingis" and "Dee-el", because that z was never a z.`,
+   `A letter replaced by a lookalike that still haunts Scottish surnames. Your gh.`, 8, 9, 8],
+  ["々", "U+3005", "Noma, the repeat mark", "Japanese and Chinese",
+   `It means "repeat the character before me": 時々 is toki-doki, 人々 is hito-bito. People call it noma because it looks like katakana ノ and マ stacked, though it most likely grew out of 仝, an old variant of 同, "same". It isn't a kanji and has no reading of its own.`,
+   `Grammar compressed into a few strokes. Your really々 rule is the best idea in the whole spec.`, 7, 7, 10],
+  ["ꝥ", "U+A765", "Thorn with stroke", "Medieval English",
+   `Medieval scribes abbreviated anything they wrote often enough. A thorn with a stroke through its stem meant þæt, "that". Manuscripts are full of marks like this, a whole layer of shorthand that printing slowly flattened back into spelled-out words.`,
+   `Exactly what you're doing, 700 years earlier.`, 7, 8, 9],
+  ["ƕ", "U+0195", "Hwair", "Gothic, 4th century",
+   `Bishop Wulfila created the Gothic alphabet in the 4th century to translate the Bible for the Goths, mixing Greek, Latin and runic letters. One of them, 𐍈, stood for the hw sound. ƕ is how scholars write it in Latin letters today.`,
+   `wh in one letter, with a bishop's paper trail.`, 8, 8, 9],
+  ["ŋ", "U+014B", "Eng", "Proposed 1619, now everywhere",
+   `The English schoolmaster Alexander Gill proposed it in 1619 for the ng sound, which English spells with two letters but says as one. English ignored him. Phoneticians didn't, and neither did plenty of languages: ŋ is an everyday letter in Northern Sámi, Wolof, Ewe and many more.`,
+   `Your most useful pick by a mile. 35,000 uses in your notes.`, 7, 7, 10],
+  ["𒀭", "U+1202D", "Dingir", "Sumerian cuneiform, around 3000 BC",
+   `It began as a picture of a star. In Sumerian it was read an, "sky", or dingir, "god", and it was also written silently in front of every god's name, a label meaning "what follows is divine". Cuneiform was pressed into wet clay with a cut reed, which is why it's all wedges.`,
+   `The oldest glyph here, and it was already doing grammar by staying silent.`, 9, 9, 4],
+  ["⌬", "U+232C", "Benzene ring", "Chemistry, 1865",
+   `August Kekulé proposed the ring structure of benzene in 1865. Twenty-five years later he told a story about dozing by a fire and seeing a snake seize its own tail, and that's how he said the idea came to him. Whether it happened that way is anyone's guess, but chemists have retold it ever since. Unicode files it under miscellaneous technical symbols.`,
+   `A dream, a snake and a perfect hexagon. Still waiting for its job in your script.`, 9, 8, 6],
+  ["ѿ", "U+047F", "Ot", "Church Slavonic",
+   `An omega with a т sitting on top, spelling от, "from". Church Slavonic scribes wrote the word so often that it fused into one character. The omega underneath came from Greek and sounded just like o, so scribes kept it for a few set words and for decoration.`,
+   `A whole word in one character, wearing a tiny hat. Strong contender for "from".`, 8, 7, 9],
+  ["⸮", "U+2E2E", "Percontation point", "English printing, 1580s",
+   `The printer Henry Denham proposed a reversed question mark in the 1580s for rhetorical questions, the kind that don't expect an answer. It never caught on, but people kept reinventing it as an irony mark, and it finally made it into Unicode as the reversed question mark.`,
+   `The right marker for your "maybe" (1,100 uses). A question that isn't really asking.`, 7, 8, 9],
+  ["ſ", "U+017F", "Long s", "European printing until about 1800",
+   `For centuries an s at the start or in the middle of a word was written ſ, and only a final s looked like ours. That's why the US Bill of Rights says "Congreſs". English printers dropped it around 1800.`,
+   `An f that got tired. Pure decoration, but excellent decoration.`, 8, 7, 5],
+  ["ß", "U+00DF", "Eszett", "German",
+   `It grew out of long s plus s, or plus z (scholars still argue, hence the name Eszett, "s-z"). Switzerland dropped it and writes ss. Germany only officially accepted a capital version, ẞ, in 2017.`,
+   `Your ss, and deadaß is the best word in the spec.`, 8, 7, 10],
+  ["ⳃ", "U+2CC3", "Crossed shei", "Old Coptic, Egypt",
+   `Coptic is the Greek alphabet plus a handful of letters taken from Demotic, the late cursive form of Egyptian hieroglyphs, for sounds Greek didn't have. Shei, ϣ, is one of them: the sh sound, with a family tree reaching back to hieroglyphs. ⳃ is a crossed variant from Old Coptic texts.`,
+   `An Egyptian hieroglyph hiding inside a Greek alphabet. A candidate for sh.`, 8, 9, 8],
+  ["𓂀", "U+13080", "Eye of Horus", "Egyptian hieroglyph",
+   `The wedjat eye was a symbol of protection and healing: Horus lost his eye fighting Set, and it was restored. A popular story says each part of the eye stood for a fraction, from ½ down to 1/64, used to measure grain. Egyptologists now doubt the fractions and the eye were ever connected, but the story refuses to die.`,
+   `Protection magic in a single character. It belongs next to ꙮ in the eye collection.`, 9, 9, 3],
+  ["λ", "U+03BB", "Lambda", "Greek, from Phoenician",
+   `Greek l, descended from the Phoenician letter lamed, usually explained as an ox-goad. In the 1930s Alonzo Church used it for functions in what became the lambda calculus, the ancestor of every functional programming language. One story says it started as a typesetting accident, a hat over an x that turned into λ; Church told it differently at different times.`,
+   `The programmer's letter. λ = like makes your notes look like Lisp.`, 7, 8, 10],
+  ["ꙭ", "U+A66D", "Double monocular O", "Old Church Slavonic",
+   `Scribes sometimes drew the o in око, "eye", with a pupil, so the word had an eye in it. The word for a pair of eyes got two of them side by side: ꙭ, and its joined twin ꙫ. The seraph's ꙮ is the same joke taken to its limit.`,
+   `You said boobs. You weren't wrong. Essential.`, 9, 8, 5],
+  ["ヿ", "U+30FF", "Koto", "Japanese katakana ligature",
+   `コ and ト written as one sign. Koto means "thing" or "matter", common enough in older Japanese writing to earn a shortcut. Its hiragana cousin ゟ, yori, "from", was a favourite in vertical writing.`,
+   `Your "thing" glyph is a real historical thing. Doesn't get better than that.`, 7, 7, 10],
+  ["ʬ", "U+02AC", "Bilabial percussive", "Extended phonetic alphabet",
+   `From the extIPA, the extensions to the phonetic alphabet used in speech therapy and research on disordered speech. It transcribes the smack of your lips hitting each other.`,
+   `A letter for a lip smack. Two w's stacked like a rubber stamp.`, 8, 6, 6],
+  ["𗀀", "U+17000", "Tangut", "Western Xia, from around 1036",
+   `The Western Xia state introduced its own script around 1036: thousands of characters built from the same kinds of strokes as Chinese, so they look like Chinese, while sharing almost nothing with it. The state fell to the Mongols in 1227, and the script stayed unreadable until scholars largely deciphered it in the 20th century.`,
+   `A historical conlang with 6,000 signs. The closest thing on this list to what you're building.`, 8, 9, 3],
+  ["𐘀", "U+10600", "Linear A", "Minoan Crete, around 1800 to 1450 BC",
+   `The script of Minoan Crete. Its successor, Linear B, was deciphered in 1952 and turned out to be an early form of Greek. Linear A shares many of the same signs, so we can roughly sound it out, but the language underneath is still unknown.`,
+   `You can read it aloud and still have no idea what it says. Peak secret-script energy.`, 7, 9, 4],
+  ["ꭘ", "U+AB58", "X with long left leg and low right ring", "Phonetic transcription, added 2014",
+   `It came into Unicode in 2014 in a batch of specialist phonetic letters, many of them from Teuthonista, the system German-language dialect researchers used to write down exactly how each village spoke. Every hook and ring marks a sound difference too fine for normal spelling.`,
+   `The best name in Unicode. An x that's about to kick something.`, 8, 6, 7],
+  ["🝳", "U+1F773", "Alchemical half ounce", "Alchemy manuscripts, encoded 2010",
+   `The last of the 116 alchemical symbols Unicode added in 2010, collected from alchemy manuscripts and their symbol tables. Most of the block is substances and processes (sulfur 🜍, salt 🜔, mercury ☿); this one is just a unit of weight.`,
+   `Alchemists measuring things very seriously. You picked it for "cool", and I respect that.`, 7, 6, 7],
+];
+
+const smart = s => s.replace(/"([^"]*)"/g, "\u201C$1\u201D").replace(/'/g, "\u2019");
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const bar = (label, v) => `<dt>${label}</dt><dd><span style="--v:${v}"></span></dd><div class="n">${v}</div>`;
+
+document.getElementById("frieze").innerHTML = G.map(([g, , name], i) =>
+  `<a href="#g${i + 1}" style="--i:${i}" title="${i + 1}. ${esc(name)}">${g}</a>`).join("");
+
+document.getElementById("plates").innerHTML = G.map(([g, cp, name, where, lore, verdict, looks, loreScore, fit], i) => `
+<article class="plate" id="g${i + 1}">
+  <div class="mark">
+    <button class="glyph" data-c="${g}" aria-label="Copy ${esc(name)}">${g}</button>
+    <span class="cp">${cp}</span>
+  </div>
+  <div class="text">
+    <p class="rank">${i + 1}</p>
+    <h2>${esc(name)}</h2>
+    <p class="where">${esc(where)}</p>
+    <p>${esc(smart(lore))}</p>
+    <p class="verdict">${esc(smart(verdict))}</p>
+    <dl class="scores">${bar("looks", looks)}${bar("lore", loreScore)}${bar("for your script", fit)}</dl>
+  </div>
+</article>`).join("");
+
+const toast = document.getElementById("toast");
+document.addEventListener("click", e => {
+  const b = e.target.closest(".glyph");
+  if (!b) return;
+  const done = () => { toast.textContent = "Copied " + b.dataset.c; toast.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toast.style.opacity = 0, 1200); };
+  navigator.clipboard.writeText(b.dataset.c).then(done, done);
+});
+</script>
+</body>
+</html>
