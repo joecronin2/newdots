@@ -1,6 +1,6 @@
 // Joe's dvorak. Loaded as `custom` via /usr/share/X11/xkb/symbols/custom -> this file (fcitx5 group "Default").
 // Left shift  = Shift + glyph key: gives the glyph on keys that have one (þ æ か し), normal Shift everywhere else
-// Right shift = plain Shift (capitals on glyph keys: T A K S)
+// Right shift = plain Shift (capitals on glyph keys: T A K S), on the z key (AB10); q moved to the RTSH key, z to q's spot (AD06)
 partial alphanumeric_keys
 xkb_symbols "dvcustom" {
 
@@ -12,9 +12,9 @@ xkb_symbols "dvcustom" {
     // FOUR_LEVEL glyph keys see Shift+LevelThree -> level 4 = glyph
     key <LFSH>	{ type= "ONE_LEVEL", symbols[Group1]= [ ISO_Level3_Shift ],
                   actions[Group1]= [ SetMods(modifiers= Shift+LevelThree) ] };
-    key <RTSH>	{ type= "ONE_LEVEL", [ Shift_R ] };
+    key <AB10>	{ type= "ONE_LEVEL", [ Shift_R ] };
     modifier_map Mod5  { <LFSH> };
-    modifier_map Shift { <RTSH> };
+    modifier_map Shift { <AB10> };
 
     key <TLDE>	{[     grave,    asciitilde ]};
     key <AE01>	{[         1,    exclam     ]};
@@ -35,7 +35,7 @@ xkb_symbols "dvcustom" {
     key <AD03>	{[    period,    greater    ]};
     key <AD04>	{[         p,    P          ]};
     key <AD05>	{[         y,    Y          ]};
-    key <AD06>	{[         q,    Q          ]};
+    key <AD06>	{[         z,    Z          ]};
     key <AD07>	{[         f,    F          ]};
     key <AD08>	{[         g,    G          ]};
     key <AD09>	{[         r,    R          ]};
@@ -66,5 +66,5 @@ xkb_symbols "dvcustom" {
     key <AB07>	{[         m,    M          ]};
     key <AB08>	{[         w,    W          ]};
     key <AB09>	{[         v,    V          ]};
-    key <AB10>	{[         z,    Z          ]};
+    key <RTSH>	{[         q,    Q          ]};
 };
