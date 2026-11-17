@@ -19,7 +19,7 @@ source ~/.zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 export PROJECT_DIR=/home/joe/projects
 
-path+=(~/scripts)
+path=(~/scripts $path)
 path+=(/home/joe/.cargo/bin)
 path+=(~/.local/bin)
 
@@ -129,6 +129,8 @@ alias emav="doas emerge --ask --verbose"
 alias sx="startx"
 
 alias npu="doas nvim /etc/portage/package.use"
+alias sudo='doas'
+alias heroin='xset r rate 660 25'
 
 alias cm="cmatrix"
 alias cb="cbonsai -l"
@@ -184,7 +186,8 @@ explore() {
 			return
 		fi
 	done
-	eza --icons -flagh
+	# ponytail: listing is UI, not output — stderr keeps $(explore) clean
+	eza --icons -flagh >&2
 }
 
 x() {
@@ -194,6 +197,10 @@ x() {
 zle_explore() { explore; zle reset-prompt; }
 zle -N zle_explore
 bindkey '^g' zle_explore
+
+zle_up() { zle push-input; BUFFER="cd ..; a"; zle accept-line; }
+zle -N zle_up
+bindkey '^b' zle_up
 
 typeset -ag precmd_functions;
 if [[ -z "${precmd_functions[(r)_direnv_hook]+1}" ]]; then

@@ -1,0 +1,11 @@
+#!/bin/sh
+# orcreds - print remaining OpenRouter credits as raw JSON
+KEYFILE="$HOME/darkweb/openrouten_apikey"
+if [ ! -f "$KEYFILE" ]; then
+  echo "error: key file $KEYFILE not found" >&2
+  exit 1
+fi
+KEY=$(tr -d '[:space:]' < "$KEYFILE")
+B="Bearer"
+curl -s https://openrouter.ai/api/v1/credits -H "Authorization: *** $KEY" | \
+  jq '{total_credits: .data.total_credits, total_usage: .data.total_usage, remaining: (.data.total_credits - .data.total_usage)}'

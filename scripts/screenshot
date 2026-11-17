@@ -1,0 +1,7 @@
+#!/bin/sh
+
+OUT="/tmp/ss.png"
+
+mkdir -p "$(dirname "$OUT")"
+
+maim -s "$OUT"

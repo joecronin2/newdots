@@ -1,0 +1,83 @@
+#!/bin/sh
+# deadman: powers off unless you check in again.
+#   deadman [dur]   start, or reset the countdown to dur (default 1h). e.g. 45m, 2h, 90s
+#   deadman off     cancel
+#   deadman bar     one-line status for dwmblocks (prints nothing when off)
+
+D=${XDG_CACHE_HOME:-$HOME/.cache}/deadman
+UNTIL=$D/until   # epoch second the machine powers off
+PID=$D/pid       # watcher pid
+mkdir -p "$D"
+
+secs() {
+	case $1 in
+		*h) echo $(( ${1%h} * 3600 )) ;;
+		*m) echo $(( ${1%m} * 60 )) ;;
+		*s) echo $(( ${1%s} )) ;;
+		*)  echo "$1" ;;
+	esac
+}
+
+watcher() {
+	echo $$ > "$PID"
+	seen=""; warned=""
+	while :; do
+		[ -f "$UNTIL" ] || exit 0
+		end=$(cat "$UNTIL")
+		left=$(( end - $(date +%s) ))
+		# a reset gives a new deadline, so clear the warnings already sent
+		if [ "$end" != "$seen" ]; then seen=$end; warned=""; fi
+		if [ "$left" -le 0 ]; then
+			notify-send -u critical -t 10000 "DEADMAN" "Powering off now"
+			sleep 3
+			poweroff
+			exit 0
+		fi
+		for t in 600 300 60; do
+			case " $warned " in *" $t "*) continue ;; esac
+			if [ "$left" -le "$t" ]; then
+				warned="$warned $t"
+				urg=normal; [ "$t" -le 300 ] && urg=critical
+				notify-send -u "$urg" -t 0 "DEADMAN" "Powering off in $((left / 60))m $((left % 60))s. Run: deadman"
+			fi
+		done
+		sleep 10
+	done
+}
+
+bar() {
+	[ -f "$UNTIL" ] || return 0
+	left=$(( $(cat "$UNTIL") - $(date +%s) ))
+	[ "$left" -lt 0 ] && left=0
+	if [ "$left" -le 300 ]; then
+		printf '!! DEADMAN %d:%02d !!' $((left / 60)) $((left % 60))
+	elif [ "$left" -lt 3600 ]; then
+		printf 'DEADMAN %dm' $((left / 60))
+	else
+		printf 'DEADMAN %dh%02dm' $((left / 3600)) $(( (left % 3600) / 60 ))
+	fi
+}
+
+start() {
+	echo $(( $(date +%s) + $1 )) > "$UNTIL"
+	if [ -f "$PID" ] && kill -0 "$(cat "$PID")" 2>/dev/null; then
+		notify-send "DEADMAN" "Countdown reset to $2"
+	else
+		setsid -f "$0" _watch </dev/null >/dev/null 2>&1
+		notify-send "DEADMAN" "Armed: powers off in $2 unless you run deadman again"
+	fi
+}
+
+off() {
+	rm -f "$UNTIL"
+	[ -f "$PID" ] && kill "$(cat "$PID")" 2>/dev/null
+	rm -f "$PID"
+	notify-send "DEADMAN" "Cancelled"
+}
+
+case "$1" in
+	off)     off ;;
+	bar)     bar ;;
+	_watch)  watcher ;;
+	*)       start "$(secs "${1:-1h}")" "${1:-1h}" ;;
+esac

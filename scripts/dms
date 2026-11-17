@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# dead man's switch for dwmblocks
+#   dms <secs> [grace]  arm      dms r  reset      dms x  disarm      dms  status (block cmd)
+f=~/.cache/dms
+case $1 in
+  x) rm -f "$f"; exit ;;
+  r) [[ -f $f ]] || exit; read -r t g _ < "$f" ;;
+  [0-9]*) t=$1 g=${2:-60} ;;
+esac
+[[ $t ]] && { echo "$t $g $(( $(date +%s) + t ))" > "$f"; exit; }
+
+[[ -f $f ]] || exit
+read -r t g end < "$f"
+left=$(( end - $(date +%s) ))
+(( left <= 0 )) && { rm -f "$f"; loginctl poweroff; }
+(( left <= g )) && { m='☠ '; (( left % 5 )) || aplay -q ~/sounds/notification.wav &>/dev/null & }
+printf '%s%02d:%02d\n' "$m" $((left / 60)) $((left % 60))

@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+    echo "Usage: $0 [disk image] [mount point]" >&2
+    exit 1
+}
+
+cleanup() {
+    if mountpoint -q "$MOUNT_POINT"; then
+        echo "Unmounting $MOUNT_POINT..."
+        umount "$MOUNT_POINT"
+    fi
+
+    if cryptsetup status "$MAPPER_DEVICE" &>/dev/null; then
+        echo "Closing LUKS mapper $MAPPER_DEVICE..."
+        cryptsetup luksClose "$MAPPER_DEVICE"
+    fi
+
+    if losetup "$LOOP_DEVICE" &>/dev/null; then
+        echo "Detaching loop device $LOOP_DEVICE..."
+        losetup -d "$LOOP_DEVICE"
+    fi
+}
+
+if [[ "$(whoami)" != "root" ]]; then
+    echo "Error: You must run this script as root." >&2
+    exit 1
+fi
+
+if [[ $# -lt 2 ]]; then
+    usage
+fi
+
+DISK_IMAGE="$1"
+MOUNT_POINT="$2"
+LOOP_DEVICE=$(losetup -f)
+MAPPER_DEVICE="encrypted_disk"
+
+trap cleanup EXIT ERR INT
+
+mkdir -p "$MOUNT_POINT"
+
+echo "Setting up loop device..."
+losetup "$LOOP_DEVICE" "$DISK_IMAGE"
+
+echo "Opening LUKS container..."
+cryptsetup luksOpen "$LOOP_DEVICE" "$MAPPER_DEVICE"
+
+echo "Mounting..."
+mount "/dev/mapper/$MAPPER_DEVICE" "$MOUNT_POINT"
+
+echo "Disk mounted successfully at $MOUNT_POINT"
