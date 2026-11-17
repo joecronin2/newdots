@@ -1,25 +1,38 @@
+// Joe's dvorak. Loaded as `custom` via /usr/share/X11/xkb/symbols/custom -> this file (fcitx5 group "Default").
+// Left shift  = Shift + glyph key: gives the glyph on keys that have one (þ æ か し), normal Shift everywhere else
+// Right shift = plain Shift (capitals on glyph keys: T A K S)
 partial alphanumeric_keys
 xkb_symbols "dvcustom" {
 
     name[Group1]= "English (Dvorak custom)";
 
-    key <TLDE>	{[     grave,    asciitilde,    dead_grave,  dead_tilde ]};
+    // shift split
+    virtual_modifiers LevelThree;
+    // presses Shift AND LevelThree: two-level keys ignore LevelThree -> normal shifted char,
+    // FOUR_LEVEL glyph keys see Shift+LevelThree -> level 4 = glyph
+    key <LFSH>	{ type= "ONE_LEVEL", symbols[Group1]= [ ISO_Level3_Shift ],
+                  actions[Group1]= [ SetMods(modifiers= Shift+LevelThree) ] };
+    key <RTSH>	{ type= "ONE_LEVEL", [ Shift_R ] };
+    modifier_map Mod5  { <LFSH> };
+    modifier_map Shift { <RTSH> };
+
+    key <TLDE>	{[     grave,    asciitilde ]};
     key <AE01>	{[         1,    exclam     ]};
     key <AE02>	{[         2,    at         ]};
     key <AE03>	{[         3,    numbersign ]};
     key <AE04>	{[         4,    dollar     ]};
     key <AE05>	{[         5,    percent    ]};
-    key <AE06>	{[         6,    asciicircum,   dead_circumflex,  dead_circumflex ]};
+    key <AE06>	{[         6,    asciicircum]};
     key <AE07>	{[         7,    ampersand  ]};
     key <AE08>	{[         8,    asterisk   ]};
-    key <AE09>	{[         9,    parenleft,     dead_grave,  dead_breve ]};
+    key <AE09>	{[         9,    parenleft  ]};
     key <AE10>	{[         0,    parenright ]};
     key <AE11>	{[ bracketleft,  braceleft  ]};
-    key <AE12>	{[bracketright,  braceright,    dead_tilde]};
+    key <AE12>	{[bracketright,  braceright ]};
 
-    key <AD01>	{[semicolon,    colon,      dead_acute,  dead_diaeresis ]};
-    key <AD02>	{[     apostrophe,    quotedbl,          dead_cedilla,  dead_caron ]};
-    key <AD03>	{[    period,    greater,       dead_abovedot,  periodcentered ]};
+    key <AD01>	{[ semicolon,    colon      ]};
+    key <AD02>	{[apostrophe,    quotedbl   ]};
+    key <AD03>	{[    period,    greater    ]};
     key <AD04>	{[         p,    P          ]};
     key <AD05>	{[         y,    Y          ]};
     key <AD06>	{[         q,    Q          ]};
@@ -30,22 +43,23 @@ xkb_symbols "dvcustom" {
     key <AD11>	{[     slash,    question   ]};
     key <AD12>	{[     equal,    plus       ]};
 
-    key <AC01>	{[         a,    A          ]};
+    // glyphs: level 3 and 4 both give the lowercase glyph (no glyph capitals)
+    key <AC01>	{ type= "FOUR_LEVEL", [ a, A, ae,    ae    ] };
     key <AC02>	{[         o,    O          ]};
     key <AC03>	{[         e,    E          ]};
     key <AC04>	{[         i,    I          ]};
     key <AC05>	{[         u,    U          ]};
     key <AC06>	{[         d,    D          ]};
     key <AC07>	{[         h,    H          ]};
-    key <AC08>	{[         t,    T          ]};
+    key <AC08>	{ type= "FOUR_LEVEL", [ t, T, thorn, thorn ] };
     key <AC09>	{[         n,    N          ]};
-    key <AC10>	{[	   s,    S          ]};
+    key <AC10>	{ type= "FOUR_LEVEL", [ s, S, U3057, U3057 ] };  // し
     key <AC11>	{[     minus,    underscore ]};
     key <BKSL>	{[ backslash,    bar        ]};
 
-    key <AB01>	{[ x,    X,         dead_ogonek,  dead_doubleacute ]};
-    key <AB02>	{[         comma,    less          ]};
-    key <AB03>	{[         k,    K          ]};
+    key <AB01>	{[         x,    X          ]};
+    key <AB02>	{[     comma,    less       ]};
+    key <AB03>	{ type= "FOUR_LEVEL", [ k, K, U304B, U304B ] };  // か
     key <AB04>	{[         c,    C          ]};
     key <AB05>	{[         j,    J          ]};
     key <AB06>	{[         b,    B          ]};
